@@ -25,3 +25,22 @@ def get_input_split_file(index, input_dir = None, extension = '.csv'):
         return input_dir+"/file_"+ str(index) + extension
     return default_input_dir + "/file_" + str(index) + extension
 
+# return  name of the temporary map file by given index
+def get_temp_map_file(index, reducer, output_dir = None, extension = ".csv"):
+    if not(output_dir is None):
+        return output_dir + "/map_file_" + str(index)+"-" + str(reducer) + extension
+    return default_output_dir + "/map_file_" + str(index) + "-" + str(reducer) + extension
+
+
+# return the name of the output file given its corresponding index
+def get_output_file(index, output_dir = None, extension = ".out"):
+    if not(output_dir is None):
+        return output_dir+"/reduce_file_"+ str(index) + extension
+    return default_output_dir + "/reduce_file_" + str(index) + extension
+
+
+# return the name of the output file
+def get_output_join_file(output_dir = None, extension = ".out"):
+    if not(output_dir is None):
+        return output_dir +"/output" + extension
+    return default_output_dir + "/output" + extension
