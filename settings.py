@@ -44,3 +44,4 @@ def get_output_join_file(output_dir = None, extension = ".out"):
     if not(output_dir is None):
         return output_dir +"/output" + extension
     return default_output_dir + "/output" + extension
+    
