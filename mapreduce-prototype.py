@@ -92,7 +92,34 @@ class MapReduce(object):
             self.join_outputs()
         
 
+class FileHandler(object):
+    """FileHandler Class
+    """
+    def __init__(self, input_file_path, output_dir):
+    
         
+        self.input_file_path = input_file_path
+        self.output_dir = output_dir
+        
+    def split_file(self, number_of_splits):
+            
+        """split the files according to number of splits
+
+        """
+        pass
+    
+    def join_files(self, number_of_files, clean = None, sort = True, decreasing = True):
+        """join all the files into a single output file.
+
+        Args:
+            number_of_files (_type_): _description_
+            clean (_type_, optional): _description_. Defaults to None.
+            sort (bool, optional): _description_. Defaults to True.
+            decreasing (bool, optional): _description_. Defaults to True.
+        """
+        
+        pass
+    
             
 
 
