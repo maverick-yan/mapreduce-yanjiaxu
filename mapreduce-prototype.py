@@ -116,9 +116,12 @@ class FileHandler(object):
             clean (_type_, optional): _description_. Defaults to None.
             sort (bool, optional): _description_. Defaults to True.
             decreasing (bool, optional): _description_. Defaults to True.
+        :return output_join_list: a list of the outputs
         """
-        
+
         pass
+    
+    
     
             
 
