@@ -25,6 +25,8 @@ class MapReduce(object):
         to be implemented
         
         """
+        
+        
         pass
 
     def reducer(self, key, value_list):
@@ -40,11 +42,19 @@ class MapReduce(object):
         Args:
             index (int): the index of the thread    
         """
-        # read a key 
-        # read a value 
-        # get the result of the mapper
-        # store the result to reducer
-        pass
+        input_split_file = open(settings.get_input_split_file(index), "r")
+        key = input_split_file.readline()
+        value = input_split_file.read()
+        input_split_file.close()
+        if(self.clean):
+            os.unlink(settings.get_input_split_file(index))
+        mapper_result = self.mapper(key, value)
+        for reducer_index in range(self.n_reducers):
+            temp_map_file = open(settings.get_temp_map_file(index, reducer_index), "w+")
+            json.dump([(key, value) for (key, value) in mapper_result 
+                                        if self.check_position(key, reducer_index)]
+                        , temp_map_file)
+            temp_map_file.close()
     
     def run_reducer(self, index):
         """reducer
@@ -55,8 +65,27 @@ class MapReduce(object):
         # load results from mapper
         # for each key, do reduce
         # store results
+        key_values_map = {}
+        for mapper_index in range(self.n_mappers):
+            temp_map_file = open(settings.get_temp_map_file(mapper_index, index), "r")
+            mapper_results = json.load(temp_map_file)
+            for (key, value) in mapper_results:
+                if not(key in key_values_map):
+                    key_values_map[key] = []
+                try:
+                    key_values_map[key].append(value)
+                except Exception:
+                    print ("Exception while inserting key: "+str(e))
+            temp_map_file.close()
+            if self.clean:
+                os.unlink(settings.get_temp_map_file(mapper_index, index))
+        key_value_list = []
+        for key in key_values_map:
+            key_value_list.append(self.reducer(key, key_values_map[key]))
+        output_file = open(settings.get_output_file(index), "w+")
+        json.dump(key_value_list, output_file)
+        output_file.close()
         
-        pass
     
     def run(self, join=False):
         """
