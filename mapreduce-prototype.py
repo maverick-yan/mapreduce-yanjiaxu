@@ -112,18 +112,54 @@ class FileHandler(object):
         """join all the files into a single output file.
 
         Args:
-            number_of_files (_type_): _description_
+            number_of_files (_type_): 
             clean (_type_, optional): _description_. Defaults to None.
             sort (bool, optional): _description_. Defaults to True.
             decreasing (bool, optional): _description_. Defaults to True.
+            
         :return output_join_list: a list of the outputs
         """
 
         pass
     
+    def begin_file_split(self, split_index, index):
+        """initialize a split file by opening and adding an index.
+        :param split_index: the split index we are currently on, to be used for naming the file.
+        :param index: the index given to the file.
+        """
+        file_split = open(settings.get_input_split_file(split_index-1), "w+")
+        file_split.write(str(index) + "\n")
+        return file_split
     
-    
-            
-
-
+    def is_on_split_position(self, character, index, split_size, current_split):
         
+        """Check if it is the right time to split.
+        i.e: character is a space and the limit has been reached.
+        :param character: the character we are currently on.
+        :param index: the index we are currently on.
+        :param split_size: the size of each single split.
+        :param current_split: the split we are currently on.
+        """
+        return index>split_size*current_split+1 and character.isspace()
+    
+    def split_file(self, number_of_splits):
+        """split a file into multiple files.
+        note: this has not been optimized to avoid overhead.
+        :param number_of_splits: the number of chunks to
+        split the file into.
+        """
+        file_size = os.path.getsize(self.input_file_path)
+        unit_size = file_size / number_of_splits + 1
+        original_file = open(self.input_file_path, "r")
+        file_content = original_file.read()
+        original_file.close()
+        (index, current_split_index) = (1, 1)
+        current_split_unit = self.begin_file_split(current_split_index, index)
+        for character in file_content:
+            current_split_unit.write(character)
+            if self.is_on_split_position(character, index, unit_size, current_split_index):
+                current_split_unit.close()
+                current_split_index += 1
+                current_split_unit = self.begin_file_split(current_split_index,index)
+            index += 1
+        current_split_unit.close()
