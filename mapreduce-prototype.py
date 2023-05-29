@@ -19,6 +19,8 @@ class MapReduce(object):
         self.n_mappers = n_mappers
         self.n_reducers = n_reducers
         self.clean = clean
+        self.file_handler = FileHandler(settings.get_input_file(self.input_dir), self.output_dir)
+        self.file_handler.split_file(self.n_mappers)
 
     def mapper(self, key, value):
         """
@@ -36,6 +38,12 @@ class MapReduce(object):
         """
         pass
     
+    def check_position(self, key, position):
+        """Checks current position
+
+        """
+        return position == (hash(key) % self.n_reducers)
+
     def run_mapper(self, index):
         """_summary_
 
@@ -75,7 +83,7 @@ class MapReduce(object):
                 try:
                     key_values_map[key].append(value)
                 except Exception:
-                    print ("Exception while inserting key: "+str(e))
+                    print ("Exception while inserting key: ")
             temp_map_file.close()
             if self.clean:
                 os.unlink(settings.get_temp_map_file(mapper_index, index))
@@ -119,16 +127,46 @@ class MapReduce(object):
         
         if join:
             self.join_outputs()
-        
+    
+    def join_outputs(self, clean = True, sort = True, decreasing = True):
+        """join all reduce outputs into a single file
+
+        Args:
+            clean (bool, optional): _description_. Defaults to True.
+            sort (bool, optional): _description_. Defaults to True.
+            decreasing (bool, optional): _description_. Defaults to True.
+
+        Returns:
+            _type_: _description_
+        """
+        try:
+            return self.file_handler.join_files(self.n_reducers, clean, sort, decreasing)
+        except Exception:
+            print ("Exception occured while joining")
+            return []
 
 class FileHandler(object):
     """FileHandler Class
+        split input files and join output files
     """
     def __init__(self, input_file_path, output_dir):
     
+        """initialize
         
+        """
         self.input_file_path = input_file_path
         self.output_dir = output_dir
+        
+    def initiate_file_split(self, split_index, index):
+        """initialize a split file by opening and adding an index.
+
+        :param split_index: the split index we are currently on, to be used for naming the file.
+        :param index: the index given to the file.
+
+        """
+        file_split = open(settings.get_input_split_file(split_index-1), "w+")
+        file_split.write(str(index) + "\n")
+        return file_split
         
     def split_file(self, number_of_splits):
             
@@ -192,3 +230,33 @@ class FileHandler(object):
                 current_split_unit = self.begin_file_split(current_split_index,index)
             index += 1
         current_split_unit.close()
+        
+        
+    def join_files(self, number_of_files, clean = False, sort = True, decreasing = True):
+        """join all the files in the output directory into a
+        single output file.
+
+        Args:
+            number_of_files (_type_): total number of files
+            clean (bool, optional):  Defaults to False.
+            sort (bool, optional):  Defaults to True.
+            decreasing (bool, optional):  Defaults to True.
+
+        Returns:
+            _type_: _description_
+        """
+        output_join_list = []
+        for reducer_index in xrange(0, number_of_files):
+            f = open(settings.get_output_file(reducer_index), "r")
+            output_join_list += json.load(f)
+            f.close()
+            if clean:
+                os.unlink(settings.get_output_file(reducer_index))
+        if sort:
+            from operator import itemgetter as operator_ig
+            # sort using the key
+            output_join_list.sort(key=operator_ig(1), reverse=decreasing)
+        output_join_file = open(settings.get_output_join_file(self.output_dir), "w+")
+        json.dump(output_join_list, output_join_file)
+        output_join_file.close()
+        return output_join_list
