@@ -9,8 +9,8 @@ default_output_dir = "output_files"
 
 # default mapper & reducer threads
 
-default_n_mappers = 10
-default_n_reducers = 10
+default_n_mappers = 1
+default_n_reducers = 1
 
 # return name of the input file to be split
 

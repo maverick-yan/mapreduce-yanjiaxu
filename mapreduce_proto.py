@@ -246,7 +246,7 @@ class FileHandler(object):
             _type_: _description_
         """
         output_join_list = []
-        for reducer_index in xrange(0, number_of_files):
+        for reducer_index in range(0, number_of_files):
             f = open(settings.get_output_file(reducer_index), "r")
             output_join_list += json.load(f)
             f.close()
